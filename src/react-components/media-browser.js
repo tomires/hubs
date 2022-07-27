@@ -26,7 +26,8 @@ const PRIVACY_POLICY_LINKS = {
   gifs: "https://tenor.com/legal-privacy",
   sketchfab: "https://sketchfab.com/privacy",
   youtube: "https://policies.google.com/privacy",
-  twitch: "https://www.twitch.tv/p/legal/privacy-policy/"
+  twitch: "https://www.twitch.tv/p/legal/privacy-policy/",
+  moya: "https://themoya.com/pages/privacy-policy"
 };
 
 const DEFAULT_FACETS = {
@@ -88,6 +89,10 @@ const poweredByMessages = defineMessages({
   scenes: {
     id: "media-browser.powered_by.scenes",
     defaultMessage: "Made with {editorName}"
+  },
+  moya: {
+    id: "media-browser.powered_by.moya",
+    defaultMessage: "Powered by MOYA"
   }
 });
 
@@ -115,6 +120,7 @@ const searchPlaceholderMessages = defineMessages({
   gifs: { id: "media-browser.search-placeholder.gifs", defaultMessage: "Search for GIFs..." },
   twitch: { id: "media-browser.search-placeholder.twitch", defaultMessage: "Search for Twitch streams..." },
   sketchfab: { id: "media-browser.search-placeholder.sketchfab", defaultMessage: "Search Sketchfab Models..." },
+  moya: { id: "media-browser.search-placeholder.moya", defaultMessage: "Search MOYA Inventory..." },
   default: { id: "media-browser.search-placeholder.default", defaultMessage: "Search..." }
 });
 
