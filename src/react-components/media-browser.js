@@ -17,6 +17,7 @@ import { fetchReticulumAuthenticated, getReticulumFetchUrl } from "../utils/phoe
 import { proxiedUrlFor, scaledThumbnailUrlFor } from "../utils/media-url-utils";
 import { CreateTile, MediaTile } from "./room/MediaTiles";
 import { SignInMessages } from "./auth/SignInModal";
+import { MoyaSignInMessages } from "./auth/MoyaSignInModal";
 const isMobile = AFRAME.utils.device.isMobile();
 const isMobileVR = AFRAME.utils.device.isMobileVR();
 
@@ -108,7 +109,11 @@ const customObjectMessages = defineMessages({
   avatar: {
     id: "media-browser.add_custom_avatar",
     defaultMessage: "Avatar GLB URL"
-  }
+  },
+  moya: {
+    id: "media-browser.moya_login",
+    defaultMessage: "MOYA Account"
+  },
 });
 
 const searchPlaceholderMessages = defineMessages({
@@ -344,6 +349,10 @@ class MediaBrowserContainer extends Component {
     window.dispatchEvent(new CustomEvent("action_create_avatar"));
   };
 
+  onMoyaLogin = () => {
+    //XXX
+  };
+
   processThumbnailUrl = (entry, thumbnailWidth, thumbnailHeight) => {
     if (entry.images.preview.type === "mp4") {
       return proxiedUrlFor(entry.images.preview.url);
@@ -369,6 +378,53 @@ class MediaBrowserContainer extends Component {
     // Don't render anything if we just did a feeling lucky query and are waiting on result.
     if (this.state.selectNextResult) return <div />;
     const handleCustomClicked = urlSource => {
+      if (urlSource === "moya") {
+
+        fetch(new URL(proxiedUrlFor('https://moya-world.dev.yord.co/api/login?email=test@mailinator.com&password=SuperSecurePassword1')), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          }
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          const moyaToken = data[0]['access_token'];
+          fetch(new URL(proxiedUrlFor('https://moya-world.dev.yord.co/api/assets?apiKey=' + moyaToken)), {
+            method: 'GET',
+            headers: { }
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            var state = {
+              result: {
+                entries: []
+              }
+            };
+
+            data.forEach((entry) => {
+              state.result.entries.push(
+                {
+                  id: entry.id,
+                  images: {
+                    preview: {
+                      url: entry.image
+                    }
+                  },
+                  name: entry.name,
+                  type: "moya_model",
+                  url: entry.model
+                }
+              );
+            });
+
+            this.setState(state);
+          });
+
+        });
+
+        return;
+      }
+
       const isAvatarApiType = urlSource === "avatars";
       if (isAvatarApiType) {
         this.showCustomMediaDialog(urlSource);
@@ -389,7 +445,7 @@ class MediaBrowserContainer extends Component {
     const hasPrevious = !!searchParams.get("cursor");
 
     const customObjectType =
-      this.state.result && isSceneApiType ? "scene" : urlSource === "avatars" ? "avatar" : "object";
+      this.state.result && isSceneApiType ? "scene" : urlSource === "avatars" ? "avatar" : urlSource === "moya" ? "moya" : "object";
 
     let searchDescription;
 
@@ -471,7 +527,7 @@ class MediaBrowserContainer extends Component {
         headerRight={
           showCustomOption && (
             <IconButton lg onClick={() => handleCustomClicked(urlSource)}>
-              {["scenes", "avatars"].includes(urlSource) ? <LinkIcon /> : <UploadIcon />}
+              {["scenes", "avatars", "moya"].includes(urlSource) ? <LinkIcon /> : <UploadIcon />}
               <p>{intl.formatMessage(customObjectMessages[customObjectType])}</p>
             </IconButton>
           )
@@ -562,7 +618,23 @@ class MediaBrowserContainer extends Component {
               );
             })}
           </>
-        ) : null}
+        ) : 
+        
+        (urlSource === "moya" && (
+          <CreateTile onClick={() => handleCustomClicked("moya")}
+            as="a"
+            type="moya"
+            label={
+              <FormattedMessage
+                id="media-browser.moya-login"
+                defaultMessage="Login to MOYA"
+                values={{ editorName: configs.translation("editor-name") }}
+              />
+            }
+          />
+        ))
+        
+        }
       </MediaBrowser>
     );
   }
